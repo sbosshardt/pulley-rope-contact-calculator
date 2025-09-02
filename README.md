@@ -2,6 +2,8 @@
 
 A web-based physics simulation tool for analyzing forces and contact angles in pulley-rope systems. This interactive calculator provides real-time visualization and calculations for both perpendicular and tangential rope contact modes.
 
+## 🚀 [**Try the Live Demo**](https://sbosshardt.github.io/pulley-rope-contact-calculator/)
+
 ![Pulley Calculator Demo](screenshot.png)
 
 ## Features
@@ -25,7 +27,10 @@ A web-based physics simulation tool for analyzing forces and contact angles in p
 
 ## Getting Started
 
-### Quick Start
+### 🌐 Try Online
+The easiest way to use the calculator is through the **[live demo](https://sbosshardt.github.io/pulley-rope-contact-calculator/)** - no installation required!
+
+### 💻 Run Locally
 1. Clone or download this repository
 2. Open `index.html` in any modern web browser
 3. Start experimenting with the controls!
