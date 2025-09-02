@@ -4,7 +4,7 @@ A web-based physics simulation tool for analyzing forces and contact angles in p
 
 ## 🚀 [**Try the Live Demo**](https://sbosshardt.github.io/pulley-rope-contact-calculator/)
 
-![Pulley Calculator Demo](screenshot.png)
+[![Pulley Calculator Demo](screenshot.png)](https://sbosshardt.github.io/pulley-rope-contact-calculator/)
 
 ## Features
 
