@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pulley/Rope Contact Calculator</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Interactive Pulley/Rope Contact Calculator</h1>
+        </header>
+        
+        <main class="main-content">
+            <div class="visualization-container">
+                <svg id="visualization" viewBox="0 0 400 400">
+                    <!-- Pulley circle -->
+                    <circle id="pulley" cx="200" cy="200" r="80" fill="none" stroke="#333" stroke-width="3"/>
+                    
+                    <!-- Rope arc -->
+                    <path id="rope-arc" fill="none" stroke="#8B4513" stroke-width="6"/>
+                    
+                    <!-- Rope segments -->
+                    <line id="rope-segment1" stroke="#8B4513" stroke-width="6"/>
+                    <line id="rope-segment2" stroke="#8B4513" stroke-width="6"/>
+                    
+                    <!-- Contact points (draggable) -->
+                    <circle id="contact-point1" r="8" fill="#FF4444" stroke="#000" stroke-width="2" style="cursor: grab;"/>
+                    <circle id="contact-point2" r="8" fill="#4444FF" stroke="#000" stroke-width="2" style="cursor: grab;"/>
+                    
+                    <!-- Force vectors -->
+                    <g id="force-vectors">
+                        <defs>
+                            <marker id="arrowhead" markerWidth="10" markerHeight="7" 
+                                    refX="10" refY="3.5" orient="auto">
+                                <polygon points="0 0, 10 3.5, 0 7" fill="#FF0000"/>
+                            </marker>
+                        </defs>
+                        <line id="force1-vector" stroke="#FF0000" stroke-width="2" marker-end="url(#arrowhead)"/>
+                        <line id="force2-vector" stroke="#FF0000" stroke-width="2" marker-end="url(#arrowhead)"/>
+                        <line id="axle-force-vector" stroke="#00AA00" stroke-width="3" marker-end="url(#arrowhead)"/>
+                    </g>
+                    
+                    <!-- Labels -->
+                    <g id="labels">
+                        <text id="slope1-label" class="label" text-anchor="middle"></text>
+                        <text id="slope2-label" class="label" text-anchor="middle"></text>
+                        <text id="contact-angle-label" class="label" text-anchor="middle"></text>
+                    </g>
+                </svg>
+            </div>
+            
+            <div class="controls-results">
+                <div class="controls-section">
+                    <h2>Controls</h2>
+                    
+                    <div class="input-group">
+                        <label for="tension">Rope Tension (T)</label>
+                        <div class="input-with-units">
+                            <input type="number" id="tension" value="10" step="0.1" min="0">
+                            <span class="unit">N</span>
+                        </div>
+                        <input type="range" id="tension-slider" min="0" max="50" value="10" step="0.1">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="theta1">Start Angle (θ₁)</label>
+                        <div class="input-with-units">
+                            <input type="number" id="theta1" value="180" step="0.1">
+                            <select id="theta1-units">
+                                <option value="deg">degrees</option>
+                                <option value="rad">radians</option>
+                                <option value="pi">π radians</option>
+                            </select>
+                        </div>
+                        <input type="range" id="theta1-slider" min="-360" max="360" value="180" step="1">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="theta2">End Angle (θ₂)</label>
+                        <div class="input-with-units">
+                            <input type="number" id="theta2" value="270" step="0.1">
+                            <select id="theta2-units">
+                                <option value="deg">degrees</option>
+                                <option value="rad">radians</option>
+                                <option value="pi">π radians</option>
+                            </select>
+                        </div>
+                        <input type="range" id="theta2-slider" min="-360" max="360" value="270" step="1">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="wrap-direction">Wrapping Direction</label>
+                        <select id="wrap-direction">
+                            <option value="ccw">Counterclockwise</option>
+                            <option value="cw">Clockwise</option>
+                        </select>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="contact-mode">Rope Contact Mode</label>
+                        <select id="contact-mode">
+                            <option value="perpendicular">Perpendicular (Radial)</option>
+                            <option value="tangential" selected>Tangential</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="results-section">
+                    <h2>Results</h2>
+                    
+                    <div class="result-group">
+                        <h3>Rope Segment Slopes</h3>
+                        <div class="result-item">
+                            <span class="label">Segment 1 (θ₁):</span>
+                            <span id="slope1-result">0</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Segment 2 (θ₂):</span>
+                            <span id="slope2-result">undefined</span>
+                        </div>
+                    </div>
+                    
+                    <div class="result-group">
+                        <h3>Rope End Forces</h3>
+                        <div class="result-item">
+                            <span class="label">Force 1 (Fx, Fy):</span>
+                            <span id="force1-result">(10, 0) N</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Force 2 (Fx, Fy):</span>
+                            <span id="force2-result">(0, 10) N</span>
+                        </div>
+                    </div>
+                    
+                    <div class="result-group">
+                        <h3>Pulley Axle Force</h3>
+                        <div class="result-item">
+                            <span class="label">Net Force (Fx, Fy):</span>
+                            <span id="axle-force-result">(10, 10) N</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Magnitude:</span>
+                            <span id="axle-magnitude-result">14.1421 N</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Angle:</span>
+                            <span id="axle-angle-result">45°</span>
+                        </div>
+                    </div>
+                    
+                    <div class="result-group">
+                        <h3>Contact Angle</h3>
+                        <div class="result-item">
+                            <span class="label">Radians:</span>
+                            <span id="contact-angle-rad-result">1.5708 rad</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Degrees:</span>
+                            <span id="contact-angle-deg-result">90°</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script src="app.js"></script>
+</body>
+</html>

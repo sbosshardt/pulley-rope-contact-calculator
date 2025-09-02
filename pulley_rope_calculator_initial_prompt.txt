@@ -1,0 +1,117 @@
+WEB-BASED INTERACTIVE PULLEY/ROPE CALCULATOR (PLAIN TEXT SPEC FOR CURSOR)
+Target stack: HTML, CSS, vanilla JavaScript ONLY (no frameworks). Use SVG or Canvas for rendering.
+Project structure: Separate files (index.html, styles.css, app.js). No bundlers.
+
+1) Visualization
+- Draw a pulley as a circle and a rope that wraps around it between two contact points (start: point 1, end: point 2).
+- Show both contact points and the contact angle between them.
+- The scene updates immediately when inputs change or when contact points are dragged.
+- Drag interaction: smooth, continuous rotation (no snapping). When the user drags a point, update its angle and recompute all values.
+- Auto-resize visualization with the browser window. On narrow/mobile widths, place controls/results BELOW the visualization. On wider screens, controls/results can be to the side.
+- Style: semi-realistic (rope thickness and subtle shading), but not photorealistic.
+
+2) User Inputs (each with its own unit selector, per-field)
+- Rope tension T (numeric input and slider).
+- Start angle theta1 for point 1 (numeric input and slider).
+- End angle theta2 for point 2 (numeric input and slider).
+- Wrapping direction: "clockwise" or "counterclockwise".
+- Units per input (dropdown on each numeric input): "degrees", "radians", or "pi radians".
+  * degrees: interpret value in degrees.
+  * radians: interpret value in radians.
+  * pi radians: interpret value multiplied by pi (e.g., 0.5 means 0.5*pi = 90 degrees).
+
+3) Calculated Outputs
+- Slopes of the two straight rope segments (segment at theta1 and segment at theta2):
+  slope = (y2 - y1) / (x2 - x1). For a segment oriented at angle theta relative to +x, slope = tan(theta).
+  If cos(theta) == 0 (vertical), show the text: "undefined".
+- Rope end forces (assuming basic physics: no friction, equal tension, static):
+  If rope tension is T and the rope direction makes angle theta with +x, then:
+    Fx = T * cos(theta)
+    Fy = T * sin(theta)
+  Compute this for the segment at theta1 and the segment at theta2.
+- Pulley axle force (net rope force on the axle):
+  Sum the two rope-end vectors:
+    F_axle_x = F1_x + F2_x
+    F_axle_y = F1_y + F2_y
+  Also compute magnitude and angle:
+    |F_axle| = sqrt(F_axle_x^2 + F_axle_y^2)
+    angle_deg = degrees(atan2(F_axle_y, F_axle_x))
+- Contact angle between point 1 and point 2:
+  Let theta1 and theta2 be in radians after unit conversion.
+  For counterclockwise wrapping:
+    delta_theta = (theta2 - theta1); if delta_theta < 0 add multiples of 2*pi until 0 <= delta_theta < 2*pi.
+  For clockwise wrapping:
+    delta_theta = (theta1 - theta2); if delta_theta < 0 add multiples of 2*pi until 0 <= delta_theta < 2*pi.
+  Display contact angle in both radians and degrees.
+- Display logic:
+  * Show as many outputs inline near the relevant geometry as is readable (e.g., annotate each segment with its slope and a small force vector label).
+  * Use a structured results panel for values that don’t fit well (e.g., full axle force vector and magnitude). On small screens, this panel sits below the visualization.
+- Formatting:
+  * Show values with up to 4 decimal places but do not show unnecessary trailing zeros (example: show "4" instead of "4.0000").
+  * Use the text "undefined" for a perfectly vertical slope.
+
+4) Interaction and Performance
+- All inputs and drags should trigger immediate recomputation and redraw.
+- Keep rendering and math in plain JS. Keep functions small and well-commented.
+- Utility: provide helpers for angle unit conversion (degrees <-> radians <-> pi radians), number formatting (max 4 decimals, strip trailing zeros), and angle normalization to [-pi, pi) and [0, 2*pi) as needed.
+
+5) Suggested Architecture
+- index.html: layout with a responsive container, visualization area, and a controls/results section.
+- styles.css: responsive grid/flex; visualization scales; nice typographic scale; touch-friendly sliders.
+- app.js:
+  * State: T, theta1, theta2, wrapDirection; per-field unit modes.
+  * Unit converters: toRadians(value, mode) where mode in {"deg", "rad", "pi"}; fromRadians as needed.
+  * Geometry: compute segment directions at theta1 and theta2; slopes using tan(theta) with vertical detection.
+  * Forces: F1=(T*cos(theta1), T*sin(theta1)); F2=(T*cos(theta2), T*sin(theta2)); axle = F1+F2; magnitude + atan2.
+  * Contact angle: per the wrapping rule above.
+  * Rendering: draw pulley (circle), rope arc, straight segments, draggable handles; annotate with small labels.
+  * Interactivity: mouse and touch handlers for dragging; sliders and numeric inputs kept in sync.
+  * Formatting: up to 4 decimals, strip trailing zeros, "undefined" for vertical slope.
+
+6) Example Input/Output Cases (for testing)
+Case A:
+  T = 10 N
+  theta1 = 0 deg
+  theta2 = 90 deg
+  wrap = CCW
+  Expectations:
+    Segment slopes: slope1 = 0, slope2 = undefined
+    F1 = (10, 0) N
+    F2 = (0, 10) N
+    F_axle = (10, 10) N
+    |F_axle| = 14.1421 N
+    angle_deg(F_axle) = 45
+    contact angle = 1.5708 rad = 90 deg
+
+Case B:
+  T = 5 N
+  theta1 = 30 deg
+  theta2 = -30 deg
+  wrap = CW
+  Expectations:
+    Segment slopes: slope1 = tan(30 deg) = 0.5774, slope2 = tan(-30 deg) = -0.5774
+    F1 = (4.3301, 2.5) N
+    F2 = (4.3301, -2.5) N
+    F_axle = (8.6603, 0) N
+    |F_axle| = 8.6603 N
+    angle_deg(F_axle) = 0
+    contact angle = 1.0472 rad = 60 deg
+
+Case C:
+  T = 12.5 N
+  theta1 = 180 deg
+  theta2 = 270 deg
+  wrap = CCW
+  Expectations:
+    Segment slopes: slope1 = 0, slope2 = undefined
+    F1 = (-12.5, 0) N
+    F2 = (0, -12.5) N
+    F_axle = (-12.5, -12.5) N
+    |F_axle| = 17.6777 N
+    angle_deg(F_axle) = -135
+    contact angle = 1.5708 rad = 90 deg
+
+Deliverables
+- Provide a working demo page with responsive layout and the behaviors above.
+- Keep code modular and commented, with clear sections for conversions, geometry, forces, rendering, and UI.
+- No external libraries or frameworks.
